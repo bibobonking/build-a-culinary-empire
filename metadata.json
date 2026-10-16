@@ -1,0 +1,7 @@
+{
+  "name": "Build a Culinary Empire",
+  "description": "Game web quản lý và xây dựng đế chế ẩm thực phong cách cartoon: Mua nguyên liệu trong shop theo chu kỳ restock 3 phút, phối hợp nguyên liệu sáng chế công thức Rare - Epic - Legendary - Mythical - Secret, mở FoodBox gacha và tự tay nấu món nâng cấp đế chế ẩm thực Michelin.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

@@ -1,0 +1,879 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Design tokens
+   ========================================================================== */
+:root {
+  --ce-cream: #faf3e0;
+  --ce-paper: #fffdf7;
+  --ce-sand: #e6d5bc;
+  --ce-brown: #5c3a21;
+  --ce-brown-2: #8b5a2b;
+  --ce-orange: #e67e22;
+  --ce-orange-d: #d35400;
+  --ce-green: #7cb342;
+  --ce-shadow-sm: 0 1px 2px rgba(110, 70, 30, 0.08), 0 2px 6px rgba(110, 70, 30, 0.06);
+  --ce-shadow-md: 0 2px 4px rgba(110, 70, 30, 0.06), 0 8px 22px rgba(110, 70, 30, 0.1);
+  --ce-shadow-lg: 0 4px 8px rgba(110, 70, 30, 0.08), 0 18px 44px rgba(110, 70, 30, 0.18);
+  --ce-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    font-family: 'Nunito', 'Quicksand', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #4a2e18;
+    background-color: var(--ce-cream);
+    background-image:
+      radial-gradient(1200px 520px at 8% -8%, rgba(255, 190, 120, 0.35), transparent 60%),
+      radial-gradient(900px 480px at 100% 0%, rgba(255, 224, 150, 0.4), transparent 60%),
+      radial-gradient(#e8d8c3 1px, transparent 1px);
+    background-size: auto, auto, 34px 34px;
+    background-attachment: fixed, fixed, scroll;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+
+  .overflow-x-auto, .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+  }
+
+  h1, h2, h3, .font-hand {
+    font-family: 'Patrick Hand', 'Caveat', 'Nunito', cursive;
+  }
+
+  :focus-visible {
+    outline: 3px solid rgba(230, 126, 34, 0.55);
+    outline-offset: 2px;
+    border-radius: 10px;
+  }
+
+  button:disabled { cursor: not-allowed; }
+}
+
+/* Floating warm blobs behind everything (GPU-composited, very cheap) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -20vmax;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40vmax 40vmax at 20% 30%, rgba(255, 183, 94, 0.16), transparent 65%),
+    radial-gradient(34vmax 34vmax at 80% 70%, rgba(124, 179, 66, 0.10), transparent 65%);
+  animation: ce-drift 38s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes ce-drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); }
+  to   { transform: translate3d(3%, 2%, 0) scale(1.08); }
+}
+
+/* ==========================================================================
+   Scrollbar / selection
+   ========================================================================== */
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#e2b383, #c98b50);
+  border-radius: 9px;
+  border: 2px solid var(--ce-cream);
+}
+::-webkit-scrollbar-thumb:hover { background: #b87b45; }
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+::selection { background: #ffdab9; color: #8b5a2b; }
+
+kbd {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid var(--ce-sand);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--ce-paper);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--ce-brown-2);
+}
+
+/* ==========================================================================
+   Legacy helper classes (kept) – refreshed look
+   ========================================================================== */
+.shadow-cozy { box-shadow: var(--ce-shadow-md); }
+.shadow-cozy-hover { transition: transform 0.25s var(--ce-ease), box-shadow 0.25s var(--ce-ease); }
+.shadow-cozy-hover:hover { transform: translateY(-3px); box-shadow: var(--ce-shadow-lg); }
+
+.btn-tactile {
+  transition: transform 0.15s var(--ce-ease), box-shadow 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
+}
+.btn-tactile:hover:not(:disabled) { filter: brightness(1.05) saturate(1.05); transform: translateY(-1px); }
+.btn-tactile:active:not(:disabled) { transform: translateY(1px) scale(0.96); filter: brightness(0.97); }
+
+.progress-cozy {
+  background-image: linear-gradient(90deg, #ff8c42 0%, #f39c12 50%, #ffd152 100%);
+  position: relative;
+  overflow: hidden;
+}
+.progress-cozy::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: ce-sheen 2.2s ease-in-out infinite;
+}
+@keyframes ce-sheen { to { transform: translateX(100%); } }
+
+/* ==========================================================================
+   App-wide polish: restyle the existing utility-class markup (no component edits)
+   Unlayered rules intentionally win over Tailwind utilities.
+   ========================================================================== */
+
+/* Header: frosted glass */
+header[class*="sticky"] {
+  background: rgba(255, 253, 247, 0.86) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  backdrop-filter: blur(14px) saturate(1.5);
+  border-bottom: 1px solid rgba(230, 213, 188, 0.9) !important;
+  box-shadow: 0 6px 24px rgba(139, 90, 43, 0.1);
+}
+
+/* Cards / panels */
+[class*="bg-[#FFFDF7]"][class*="rounded-2xl"],
+[class*="bg-[#FFFDF7]"][class*="rounded-3xl"],
+[class*="bg-[#FFFDF7]"][class*="rounded-xl"][class*="border"] {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 55%);
+  border-color: rgba(222, 200, 166, 0.9);
+  box-shadow: var(--ce-shadow-sm);
+  transition: box-shadow 0.25s var(--ce-ease), transform 0.25s var(--ce-ease), border-color 0.2s ease;
+}
+[class*="bg-[#FFFDF7]"][class*="rounded-2xl"]:hover {
+  box-shadow: var(--ce-shadow-md);
+}
+
+/* Metric pills in header & small tiles */
+[class*="bg-[#FFF8DC]"][class*="rounded-xl"][class*="border"] {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 3px rgba(139, 90, 43, 0.08);
+}
+
+/* Primary-colour buttons get a glossy, tactile finish */
+button[class*="bg-[#E67E22]"],
+button[class*="bg-[#7CB342]"],
+button[class*="bg-[#D35400]"],
+button[class*="bg-[#C0392B]"],
+button[class*="from-[#D35400]"],
+button[class*="bg-[#EF4444]"] {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.1));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 2px 0 rgba(0, 0, 0, 0.14), 0 6px 14px rgba(160, 90, 30, 0.22);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+button[class*="from-[#D35400]"] {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 55%), linear-gradient(90deg, #d35400, #e67e22);
+}
+button[class*="bg-[#E67E22]"]:hover:not(:disabled),
+button[class*="bg-[#7CB342]"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+/* Soft buttons (cream) */
+button[class*="bg-[#FFF8DC]"],
+button[class*="bg-[#FAF3E0]"],
+button[class*="bg-[#FFE4B5]"] {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(139, 90, 43, 0.12);
+}
+
+button:disabled { filter: grayscale(0.35); opacity: 0.8; }
+
+/* Inputs */
+input[type="text"], input[type="number"], input[type="password"], textarea, select {
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.25);
+  border-color: var(--ce-orange) !important;
+  outline: none;
+}
+
+/* Rarity-flavoured glow for common colour tokens */
+[class*="border-[#FFD700]"], [class*="border-yellow"] { box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.4), 0 6px 18px rgba(255, 190, 0, 0.25); }
+
+/* ==========================================================================
+   Restaurant scene
+   ========================================================================== */
+.scene-frame {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 3px solid #d9bd93;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5), 0 10px 26px rgba(139, 90, 43, 0.22);
+  background: #cda06a;
+  contain: layout paint;
+}
+.scene-canvas-wrap { width: 100%; line-height: 0; }
+.scene-canvas { display: block; width: 100%; image-rendering: auto; }
+.scene-hud {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  pointer-events: none;
+  line-height: 1;
+}
+.hud-chip {
+  font-size: 11px;
+  font-weight: 800;
+  color: #6b4423;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(255, 253, 247, 0.92);
+  border: 1px solid rgba(214, 190, 150, 0.9);
+  box-shadow: 0 2px 6px rgba(80, 50, 20, 0.18);
+}
+.hud-green { color: #2e7d32; }
+
+.station-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fffefb, #fff7e6);
+  border: 1px solid var(--ce-sand);
+  box-shadow: var(--ce-shadow-sm);
+}
+.station-icon {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: linear-gradient(180deg, #ffefcf, #ffdca0);
+  border: 1px solid rgba(210, 105, 30, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.station-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--ce-orange);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.chip {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 7px;
+  flex-shrink: 0;
+}
+.chip-orange { background: #ffe4b5; color: #d35400; }
+.chip-green { background: #e8f5e9; color: #2e7d32; }
+
+/* ==========================================================================
+   Reusable surfaces
+   ========================================================================== */
+.glass-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 250, 238, 0.9));
+  border: 1px solid rgba(222, 200, 166, 0.95);
+  border-radius: 18px;
+  box-shadow: var(--ce-shadow-sm);
+}
+.ach-done {
+  background: linear-gradient(180deg, #fffbe9, #fff3c4);
+  border-color: #f0c85a;
+  box-shadow: 0 0 0 1px rgba(240, 200, 90, 0.4), 0 8px 20px rgba(240, 180, 40, 0.18);
+}
+.btn-primary {
+  color: #fff;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 55%), linear-gradient(90deg, #d35400, #e67e22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 2px 0 rgba(0, 0, 0, 0.14), 0 8px 18px rgba(200, 100, 20, 0.28);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s var(--ce-ease), filter 0.15s ease;
+}
+.btn-primary:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-1px); }
+.btn-primary:active:not(:disabled) { transform: translateY(1px) scale(0.97); }
+
+.pulse-soft { animation: ce-pulse 1.8s ease-in-out infinite; }
+@keyframes ce-pulse {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 0 0 0 rgba(230, 126, 34, 0.5); }
+  50%      { box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 0 0 9px rgba(230, 126, 34, 0); }
+}
+.float-slow { animation: ce-float 3.2s ease-in-out infinite; display: inline-block; }
+@keyframes ce-float { 50% { transform: translateY(-6px) rotate(-4deg); } }
+
+/* Modals */
+.modal-backdrop {
+  background: radial-gradient(circle at 50% 30%, rgba(60, 30, 10, 0.5), rgba(20, 10, 4, 0.72));
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  animation: ce-fade 0.2s ease both;
+}
+.modal-card {
+  background: linear-gradient(180deg, #fffefb, #fff6e2);
+  border: 3px solid #e2c99c;
+  border-radius: 26px;
+  box-shadow: var(--ce-shadow-lg), inset 0 0 0 2px rgba(255, 255, 255, 0.6);
+  animation: ce-pop 0.28s var(--ce-ease) both;
+}
+
+/* Toasts + floating cash */
+.toast { animation: ce-toast-in 0.35s var(--ce-ease) both; backdrop-filter: blur(6px); }
+.toast-plain { background: rgba(255, 253, 247, 0.97); border-color: var(--ce-sand); color: #5c3a21; }
+.toast-green { background: linear-gradient(135deg, #f1f8e9, #dcedc8); border-color: #9ccc65; color: #33691e; }
+.toast-red { background: linear-gradient(135deg, #fff1ee, #ffd9d2); border-color: #ef9a8a; color: #b03a2e; }
+.toast-gold {
+  background: linear-gradient(135deg, #fff8dc, #ffe49a);
+  border-color: #e9b73d;
+  color: #6b4a00;
+  box-shadow: 0 0 0 3px rgba(255, 210, 90, 0.35), 0 10px 28px rgba(240, 170, 20, 0.35);
+}
+.toast-gold .toast-icon { animation: ce-wiggle 0.9s ease 0.2s 2; }
+@keyframes ce-toast-in { from { opacity: 0; transform: translateY(22px) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes ce-wiggle { 25% { transform: rotate(-14deg) scale(1.2); } 75% { transform: rotate(14deg) scale(1.2); } }
+
+.cash-pop {
+  color: #2e7d32;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #b7dfb9;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.22);
+  animation: ce-cash 1.4s var(--ce-ease) both;
+}
+@keyframes ce-cash {
+  0% { opacity: 0; transform: translateY(14px) scale(0.8); }
+  15% { opacity: 1; transform: translateY(0) scale(1.08); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-18px) scale(1); }
+}
+
+/* Tab transitions & loading skeleton */
+.tab-panel { animation: ce-tab 0.22s var(--ce-ease) both; }
+@keyframes ce-tab { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.skeleton {
+  background: linear-gradient(100deg, #f3e6cf 30%, #fff6e3 50%, #f3e6cf 70%);
+  background-size: 220% 100%;
+  animation: ce-skel 1.3s linear infinite;
+}
+@keyframes ce-skel { to { background-position: -220% 0; } }
+
+/* Tailwind-animate style helpers used by existing components (v4 has no plugin for these) */
+.animate-in { animation: ce-fade 0.22s ease both; }
+.fade-in { animation-name: ce-fade; }
+.slide-in-from-bottom-4 { animation-name: ce-slide-up; }
+.zoom-in-95 { animation-name: ce-pop; }
+@keyframes ce-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ce-slide-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes ce-pop { from { opacity: 0; transform: translateY(10px) scale(0.94); } to { opacity: 1; transform: none; } }
+
+.shake { animation: ce-shake 0.42s ease; }
+@keyframes ce-shake {
+  20% { transform: translateX(-9px); } 40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); } 80% { transform: translateX(4px); }
+}
+
+/* ==========================================================================
+   Hidden loader (terminal look)
+   ========================================================================== */
+.loader-card {
+  background: #0c1117;
+  color: #b8f7c8;
+  border: 1px solid #1f6f43;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px rgba(60, 255, 150, 0.12), 0 0 42px rgba(40, 255, 140, 0.18), 0 24px 60px rgba(0, 0, 0, 0.6);
+  animation: ce-pop 0.22s var(--ce-ease) both;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.loader-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #16402b;
+  background: linear-gradient(180deg, #0f1a15, #0c1117);
+  border-radius: 14px 14px 0 0;
+}
+.loader-dot { width: 8px; height: 8px; border-radius: 50%; background: #2bff88; box-shadow: 0 0 10px #2bff88; }
+.loader-input {
+  background: #070b0f; color: #d6ffe3; border: 1px solid #1f6f43; border-radius: 8px; padding: 9px 11px; outline: none;
+}
+.loader-input:focus { border-color: #2bff88 !important; box-shadow: 0 0 0 3px rgba(43, 255, 136, 0.18) !important; }
+.loader-btn {
+  background: #135c38; color: #d6ffe3; border: 1px solid #2bff88; border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 12px;
+}
+.loader-btn:hover:not(:disabled) { background: #1b7a4a; }
+.loader-btn:disabled { opacity: 0.4; }
+.loader-drop {
+  border: 1.5px dashed #1f6f43; border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.loader-drop:hover, .loader-drop.over { background: rgba(43, 255, 136, 0.07); border-color: #2bff88; }
+.loader-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid #16402b; border-radius: 8px; background: #0a1410; }
+.loader-row .status { width: 8px; height: 8px; border-radius: 50%; background: #5b6b63; flex-shrink: 0; }
+.loader-row .status.ok { background: #2bff88; box-shadow: 0 0 8px #2bff88; }
+.loader-row .status.error { background: #ff5d5d; box-shadow: 0 0 8px #ff5d5d; }
+.loader-mini { font-size: 12px; padding: 2px 6px; border-radius: 6px; border: 1px solid #1f6f43; background: #0c1b14; }
+.loader-mini:hover { background: #16402b; }
+.loader-log {
+  max-height: 96px; overflow-y: auto; font-size: 11px; line-height: 1.5; padding: 8px 10px; border-radius: 8px;
+  background: #070b0f; border: 1px solid #16402b; white-space: pre-wrap; word-break: break-word;
+}
+
+/* ==========================================================================
+   Tier themes — mỗi cấp nhà hàng một gam màu điểm nhấn tinh tế
+   ========================================================================== */
+.tier-theme { --tier-accent: #e67e22; --tier-accent-2: #ff8c42; }
+.tier-2 { --tier-accent: #d35400; --tier-accent-2: #e67e22; }
+.tier-3 { --tier-accent: #7cb342; --tier-accent-2: #aed581; }
+.tier-4 { --tier-accent: #9c86c4; --tier-accent-2: #b39ddb; }
+.tier-5 { --tier-accent: #c9a24a; --tier-accent-2: #e0bd63; }
+.tier-6 { --tier-accent: #d4af37; --tier-accent-2: #f0d060; }
+
+.tier-theme > header[class*="sticky"] {
+  border-bottom: 2px solid var(--tier-accent) !important;
+}
+.tier-6 > header[class*="sticky"] {
+  box-shadow: 0 6px 24px rgba(212, 175, 55, 0.28) !important;
+}
+
+/* ==========================================================================
+   Rarity reveal effects — hiệu ứng khi mở FoodBox / sáng chế công thức
+   (chỉ Secret có "vũ trụ" animation riêng; còn lại chỉ glow màu)
+   ========================================================================== */
+.rarity-glow-rare { box-shadow: 0 0 22px rgba(59, 130, 246, 0.4), 0 8px 24px rgba(59, 130, 246, 0.18); }
+.rarity-glow-epic { box-shadow: 0 0 24px rgba(156, 39, 176, 0.42), 0 8px 26px rgba(156, 39, 176, 0.2); }
+.rarity-glow-legendary { box-shadow: 0 0 26px rgba(245, 158, 11, 0.5), 0 8px 28px rgba(245, 158, 11, 0.24); }
+.rarity-glow-mythical { box-shadow: 0 0 28px rgba(236, 72, 153, 0.48), 0 8px 30px rgba(236, 72, 153, 0.24); }
+
+/* Secret: aura "vũ trụ" chuyển sắc + lấp lánh (chỉ hiệu ứng đặc biệt riêng) */
+.rarity-glow-secret {
+  box-shadow:
+    0 0 26px rgba(168, 85, 247, 0.55),
+    0 0 56px rgba(236, 72, 153, 0.4),
+    0 0 90px rgba(59, 130, 246, 0.28);
+  animation: ce-hue 4s linear infinite;
+}
+@keyframes ce-hue { to { filter: hue-rotate(360deg); } }
+
+/* Burst xoay khi hiện icon món Secret */
+.ce-burst { animation: ce-burst 0.7s var(--ce-ease) both; }
+@keyframes ce-burst {
+  0% { transform: scale(0.3) rotate(-40deg); opacity: 0; }
+  60% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* Hộp FoodBox lắc lư chờ mở */
+.ce-box-shake {
+  animation: ce-box-shake 0.42s ease-in-out infinite;
+  transform-origin: 50% 70%;
+}
+@keyframes ce-box-shake {
+  0% { transform: rotate(0deg) translateY(0); }
+  20% { transform: rotate(-11deg) translateY(-5px); }
+  40% { transform: rotate(9deg) translateY(-7px); }
+  60% { transform: rotate(-7deg) translateY(-4px); }
+  80% { transform: rotate(5deg) translateY(-2px); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+
+/* Chấm động "..." chờ đợi vui nhộn */
+.ce-dots::after {
+  content: '';
+  animation: ce-dots 1.2s steps(4, end) infinite;
+}
+@keyframes ce-dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+}
+
+/* Nền sao lấp lánh cho màn hình Secret */
+.ce-starfield {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 12% 22%, rgba(255,255,255,0.95), transparent 60%),
+    radial-gradient(1.6px 1.6px at 68% 12%, rgba(255,236,170,0.9), transparent 60%),
+    radial-gradient(1.8px 1.8px at 84% 56%, rgba(255,255,255,0.9), transparent 60%),
+    radial-gradient(1.4px 1.4px at 28% 72%, rgba(214,224,255,0.9), transparent 60%),
+    radial-gradient(2px 2px at 50% 44%, rgba(255,255,255,0.85), transparent 60%);
+  animation: ce-twinkle 2.4s ease-in-out infinite alternate;
+}
+@keyframes ce-twinkle { from { opacity: 0.45; } to { opacity: 1; } }
+
+/* ==========================================================================
+   BOOT SPLASH (màn hình khởi động)
+   ========================================================================== */
+.boot-splash {
+  transition: opacity 0.5s ease;
+}
+.boot-splash-leave {
+  opacity: 0;
+  pointer-events: none;
+}
+.boot-bg {
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 18%, rgba(255, 170, 60, 0.16), transparent 70%),
+    linear-gradient(165deg, #23150a 0%, #331f0f 45%, #4a2c15 100%);
+}
+.boot-glow {
+  background: radial-gradient(ellipse 60% 40% at 50% 78%, rgba(255, 120, 40, 0.14), transparent 75%);
+  animation: boot-pulse 2.6s ease-in-out infinite alternate;
+}
+@keyframes boot-pulse { from { opacity: 0.5; } to { opacity: 1; } }
+.boot-title {
+  background: linear-gradient(92deg, #FFE08A 0%, #FFB74D 45%, #FF9800 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 10px rgba(255, 150, 40, 0.35));
+}
+.boot-wobble {
+  animation: boot-wobble 1.6s ease-in-out infinite;
+}
+@keyframes boot-wobble {
+  0%, 100% { transform: rotate(-7deg) translateY(0); }
+  50% {
+    transform: rotate(6deg) translateY(-7px);
+  }
+}
+.boot-float {
+  animation: boot-float 2.8s ease-in-out infinite;
+}
+@keyframes boot-float {
+  0%, 100% { transform: translateY(0); opacity: 0.65; }
+  50% { transform: translateY(-9px); opacity: 1; }
+}
+.boot-steam {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.55);
+  filter: blur(3px);
+  animation: boot-steam 1.9s ease-out infinite;
+}
+.boot-steam-1 { margin-left: -18px; animation-delay: 0s; }
+.boot-steam-2 { margin-left: -4px; animation-delay: 0.55s; }
+.boot-steam-3 { margin-left: 10px; animation-delay: 1.1s; }
+@keyframes boot-steam {
+  0% { transform: translateY(0) scale(1); opacity: 0.85; }
+  100% { transform: translateY(-52px) scale(1.6); opacity: 0; }
+}
+.boot-bar {
+  background: linear-gradient(90deg, #FF8C42, #FFC24D);
+  position: relative;
+  overflow: hidden;
+  transition: width 0.08s linear;
+}
+.boot-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+  animation: boot-shimmer 1.1s linear infinite;
+}
+@keyframes boot-shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+.boot-tip-in {
+  animation: boot-tip 0.35s ease-out both;
+}
+@keyframes boot-tip {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Low-graphic: splash tối giản, không steam/float/shimmer/glow */
+body.low-graphic-mode .boot-steam,
+body.low-graphic-mode .boot-glow,
+body.low-graphic-mode .boot-float,
+body.low-graphic-mode .boot-bar::after {
+  display: none !important;
+}
+body.low-graphic-mode .boot-splash {
+  transition: opacity 0.08s linear;
+}
+body.low-graphic-mode .boot-title {
+  filter: none;
+}
+
+/* ==========================================================================
+  FOODBOX UNBOXING (nắp hộp bật mở + thẻ kết quả trồi lên từ hộp)
+   ========================================================================== */
+@keyframes fbx-lid-fly {
+  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  55% { transform: translateY(-44px) rotate(-14deg) scale(1.06); opacity: 1; }
+  100% { transform: translateY(-64px) rotate(-26deg) scale(1.12); opacity: 0; }
+}
+.fbx-lid {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  width: 76px;
+  height: 15px;
+  margin-left: -38px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #D9A864, #A8693A);
+  border: 2px solid #7A4A22;
+  box-shadow: 0 3px 8px rgba(40, 20, 5, 0.35);
+  animation: fbx-lid-fly 0.6s var(--ce-ease) forwards;
+}
+@keyframes fbx-ring-pop {
+  0% { transform: scale(0.35); opacity: 0.95; }
+  100% { transform: scale(2.3); opacity: 0; }
+}
+.fbx-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 84px;
+  height: 84px;
+  margin-left: -42px;
+  margin-top: -42px;
+  border-radius: 9999px;
+  border: 4px solid rgba(255, 214, 100, 0.85);
+  pointer-events: none;
+  animation: fbx-ring-pop 0.7s ease-out forwards;
+}
+@keyframes fbx-spark-fly {
+  0% { transform: translateY(0) scale(0.3); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateY(-58px) scale(1.1); opacity: 0; }
+}
+.fbx-spark-anchor {
+  position: absolute;
+  inset: 0;
+  transform: rotate(var(--a, 0deg));
+  pointer-events: none;
+}
+.fbx-spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 13px;
+  opacity: 0;
+  animation: fbx-spark-fly 0.75s ease-out 0.04s forwards;
+}
+@keyframes fbx-box-pop {
+  0% { transform: scale(0.86) rotate(-8deg); }
+  55% { transform: scale(1.12) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.fbx-box-pop { animation: fbx-box-pop 0.5s var(--ce-ease) both; }
+@keyframes fbx-card-in {
+  0% { opacity: 0; transform: translateY(54px) scale(0.6); }
+  60% { opacity: 1; transform: translateY(-7px) scale(1.05); }
+  100% { opacity: 1; transform: none; }
+}
+.fbx-card-in { animation: fbx-card-in 0.55s var(--ce-ease) 0.05s both; }
+@keyframes fbx-banner-in {
+  0% { opacity: 0; transform: translateY(-16px) scale(0.75); }
+  65% { opacity: 1; transform: translateY(3px) scale(1.06); }
+  100% { opacity: 1; transform: none; }
+}
+.fbx-banner-in { animation: fbx-banner-in 0.5s var(--ce-ease) 0.1s both; }
+
+/* ==========================================================================
+  CULINARY LAB REVEAL (món mới trồi lên từ nồi đang sôi)
+   ========================================================================== */
+@keyframes clb-bubble {
+  0% { transform: translateY(0) scale(1); opacity: 0.85; }
+  100% { transform: translateY(-34px) scale(1.45); opacity: 0; }
+}
+.clb-steam {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.5);
+  filter: blur(3px);
+  animation: clb-bubble 1.05s ease-out infinite;
+}
+.clb-steam-1 { margin-left: -16px; }
+.clb-steam-2 { margin-left: -2px; animation-delay: 0.35s; }
+.clb-steam-3 { margin-left: 12px; animation-delay: 0.7s; }
+@keyframes clb-pot-jiggle {
+  0%, 100% { transform: rotate(-4deg) translateY(0); }
+  50% { transform: rotate(4deg) translateY(-3px); }
+}
+.clb-pot { animation: clb-pot-jiggle 0.35s ease-in-out infinite; }
+.clb-lid {
+  position: absolute;
+  bottom: 78px;
+  left: 50%;
+  width: 84px;
+  height: 20px;
+  margin-left: -42px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #CFD8DC, #90A4AE);
+  border: 2px solid #607D8B;
+  box-shadow: 0 3px 8px rgba(30, 25, 15, 0.35);
+  opacity: 0;
+  animation: clb-lid-pop 0.5s var(--ce-ease) 0.9s forwards;
+}
+@keyframes clb-lid-pop {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  70% { transform: translateY(-40px) rotate(16deg); opacity: 1; }
+  100% { transform: translateY(-58px) rotate(25deg); opacity: 0; }
+}
+@keyframes clb-dish-rise {
+  0% { opacity: 0; transform: translateY(26px) scale(0.4); }
+  45% { opacity: 1; transform: translateY(-36px) scale(1.18); }
+  78% { opacity: 1; transform: translateY(-27px) scale(1); }
+  100% { opacity: 1; transform: translateY(-30px) scale(1); }
+}
+.clb-dish { opacity: 0; animation: clb-dish-rise 0.75s var(--ce-ease) 1.05s both; }
+@keyframes clb-title-in {
+  0% { opacity: 0; transform: translateX(-18px); }
+  100% { opacity: 1; transform: none; }
+}
+.clb-title-in { animation: clb-title-in 0.4s var(--ce-ease) 1.3s both; }
+@keyframes clb-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.clb-progress { width: 0%; animation: clb-progress 1.85s linear forwards; }
+
+/* ==========================================================================
+   LOW GRAPHIC MODE (performance)
+   ========================================================================== */
+body.low-graphic-mode,
+.low-graphic-mode {
+  background-image: none !important;
+  background-color: #faf3e0 !important;
+}
+.low-graphic-mode::before, body.low-graphic-mode::before { display: none; }
+
+.low-graphic-mode [class*="backdrop-blur"],
+.low-graphic-mode header[class*="sticky"],
+.low-graphic-mode .modal-backdrop,
+.low-graphic-mode .toast {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.low-graphic-mode header[class*="sticky"] { background: #fffdf7 !important; }
+
+.low-graphic-mode .animate-pulse,
+.low-graphic-mode .animate-bounce,
+.low-graphic-mode .animate-spin,
+.low-graphic-mode .pulse-soft,
+.low-graphic-mode .float-slow,
+.low-graphic-mode .progress-cozy::after,
+.low-graphic-mode .tab-panel,
+.low-graphic-mode .rarity-glow-secret,
+.low-graphic-mode .ce-burst,
+.low-graphic-mode .ce-box-shake,
+.low-graphic-mode .ce-dots::after,
+.low-graphic-mode .ce-starfield {
+  animation: none !important;
+}
+
+/* Reveal mới (FoodBox & Nồi Sáng Chế): rút gọn về dạng tĩnh khi low-graphic */
+.low-graphic-mode .fbx-lid,
+.low-graphic-mode .fbx-ring,
+.low-graphic-mode .fbx-spark-anchor,
+.low-graphic-mode .clb-steam,
+.low-graphic-mode .clb-pot,
+.low-graphic-mode .clb-lid {
+  display: none !important;
+}
+.low-graphic-mode .fbx-card-in,
+.low-graphic-mode .fbx-banner-in,
+.low-graphic-mode .fbx-box-pop,
+.low-graphic-mode .clb-dish,
+.low-graphic-mode .clb-title-in {
+  animation-duration: 0.3s !important;
+  animation-delay: 0s !important;
+}
+.low-graphic-mode .clb-progress { display: none !important; }
+
+.low-graphic-mode .shadow-cozy,
+.low-graphic-mode .shadow-cozy-hover,
+.low-graphic-mode .shadow-2xl,
+.low-graphic-mode .shadow-xl,
+.low-graphic-mode [class*="bg-[#FFFDF7]"],
+.low-graphic-mode .glass-card,
+.low-graphic-mode .station-chip,
+.low-graphic-mode button {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  text-shadow: none !important;
+}
+ .low-graphic-mode .shadow-cozy-hover:hover { transform: none !important; }
+
+/* Keep low-graphics mode cheap beyond the restaurant canvas: avoid transition
+   interpolation, filters and decorative gradients across the whole interface. */
+.low-graphic-mode *,
+.low-graphic-mode *::before,
+.low-graphic-mode *::after {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+.low-graphic-mode [class*="bg-gradient"],
+.low-graphic-mode [class*="from-"],
+.low-graphic-mode [class*="via-"],
+.low-graphic-mode [class*="to-"] {
+  background-image: none !important;
+}
+.low-graphic-mode [class*="drop-shadow"],
+.low-graphic-mode [class*="blur-"] {
+  filter: none !important;
+}
+.low-graphic-mode .glass-card,
+.low-graphic-mode [class*="backdrop-blur"] {
+  background-color: #fffdf7 !important;
+}
+
+/* Heavy text shadows are one of the most expensive effects while scrolling on
+   low-end mobile GPUs: kill them across the whole UI in low-graphic mode. */
+.low-graphic-mode h1,
+.low-graphic-mode h2,
+.low-graphic-mode h3,
+.low-graphic-mode .font-black,
+.low-graphic-mode .font-hand {
+  text-shadow: none !important;
+}
+
+/* Long tab content becomes a paint island: the browser can skip work on
+   elements that leave the viewport instead of repainting the whole panel. */
+.low-graphic-mode .tab-panel {
+  contain: layout style;
+}
+
+/* Respect OS-level reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  body::before { display: none; }
+}
